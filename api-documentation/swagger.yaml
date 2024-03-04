@@ -1,0 +1,623 @@
+#OpenApi Documentation for Clean Calendar API
+
+openapi: 3.0.0
+info:
+  title: Clean Calendar API
+  description: This is Clean Calendar API
+  version: 1.0.2
+tags:
+  - name: User
+    description: Operations about user
+  - name: CalendarEvent
+    description: Operations about event
+  - name: Tag
+    description: Operations about tag
+  - name: Auth
+    description: Operations about authorization
+
+paths:
+  /calendar-events: # check with access token jwt
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - CalendarEvent
+      summary: Get all user events in optional date range and tags
+      operationId: getAllUserEvents
+      parameters:
+        - name: start
+          in: query
+          description: Start date of events to return
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: end
+          in: query
+          description: End date of events to return
+          required: false
+          schema:
+            type: string
+            format: date-time
+        - name: tagsIds
+          in: query
+          description: Tags ids of events to return
+          required: false
+          schema:
+            type: array
+            items:
+              type: integer
+              format: int64
+      responses:
+        '200':
+          description: Events found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CalendarEvent'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - CalendarEvent
+      summary: Create calendar event
+      operationId: createCalendarEvent
+      requestBody:
+        description: Event object that needs to be added
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCalendarEvent'
+      responses:
+        '201':
+          description: Event created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarEvent'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /calendar-events/{eventId}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - CalendarEvent
+      summary: Get event by id
+      operationId: getEventById
+      parameters:
+        - name: eventId
+          in: path
+          description: ID of event to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Event object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarEvent'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Event not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - CalendarEvent
+      summary: Update event
+      operationId: updateEvent
+      parameters:
+        - name: eventId
+          in: path
+          description: ID of event to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Event object that needs to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewCalendarEvent'
+      responses:
+        '200':
+          description: Event updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CalendarEvent'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Event not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - CalendarEvent
+      summary: Delete event
+      operationId: deleteEvent
+      parameters:
+        - name: eventId
+          in: path
+          description: ID of event to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Event deleted
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Event not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /users/{userId}:
+    get: 
+      tags:
+        - User
+      summary: Get user by id
+      operationId: getUserById
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: ID of user to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: User object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleUser'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: User not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    put:
+      tags:
+        - User
+      summary: Update user
+      operationId: updateUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: ID of user to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: User object that needs to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SimpleUser'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: User not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      tags:
+        - User
+      summary: Delete user
+      operationId: deleteUser
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          description: ID of user to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: User deleted
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: User not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login user
+      operationId: loginUser
+      requestBody:
+        description: User object that needs to be logged in
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+      responses:
+        '200':
+          description: User logged in
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SimpleUser'
+                  - type: object
+                    properties:
+                      authorized:
+                        $ref: '#/components/schemas/AuthToken'
+        '400':
+          description: Invalid input
+  /auth/register:
+    post:
+      tags:
+        - Auth
+      summary: Register new user
+      operationId: registerUser
+      requestBody:
+        description: User object that needs to be added
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SimpleUser'
+                  - type: object
+                    properties:
+                      authorized:
+                        $ref: '#/components/schemas/AuthToken'
+        '400':
+          description: Invalid input
+  /tags:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Tag
+      summary: Get all user tags
+      operationId: getAllUserTags
+      responses:
+        '200':
+          description: Tags found
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tag'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      security:
+        - bearerAuth: []
+      tags:
+        - Tag
+      summary: Create tag
+      operationId: createTag
+      requestBody:
+        description: Tag object that needs to be added
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewTag'
+      responses:
+        '201':
+          description: Tag created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '400':
+          description: Invalid input
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /tags/{tagId}:
+    get:
+      security:
+        - bearerAuth: []
+      tags:
+        - Tag
+      summary: Get tag by id
+      operationId: getTagById
+      parameters:
+        - name: tagId
+          in: path
+          description: ID of tag to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Tag object
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Tag not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    put:
+      security:
+        - bearerAuth: []
+      tags:
+        - Tag
+      summary: Update tag
+      operationId: updateTag
+      parameters:
+        - name: tagId
+          in: path
+          description: ID of tag to update
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Tag object that needs to be updated
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewTag'
+      responses:
+        '200':
+          description: Tag updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tag'
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Tag not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      security:
+        - bearerAuth: []
+      tags:
+        - Tag
+      summary: Delete tag
+      operationId: deleteTag
+      parameters:
+        - name: tagId
+          in: path
+          description: ID of tag to delete
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Tag deleted
+        '400':
+          description: Invalid ID supplied
+        '404':
+          description: Tag not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    
+
+components:
+  schemas:
+    UnauthorizedError:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Unauthorized
+      xml:
+        name: UnauthorizedError
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        usernname:
+          type: string
+          example: Bob
+        password:
+          type: string
+          format: password
+          example: hah134ksd
+        createdAt:
+          type: string
+          format: date-time
+          example: 2021-06-24T12:00:00Z
+        updatedAt:
+          type: string
+          format: date-time
+          example: 2021-06-24T12:00:00Z
+      xml:
+        name: User 
+    NewUser:
+      type: object
+      properties:
+        usernname:
+          type: string
+          example: Bob
+        password:
+          type: string
+          format: password
+          example: hah134ksd
+      xml:
+        name: NewUser
+    AuthToken:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwibmFtZSI6ImFkbWluIiwiaWF0IjoxNjI0NjU0NjY2LCJleHA
+        tokenType:
+          type: string
+          example: bearer
+        expiresIn:
+          type: integer
+          format: int64
+          example: 3600
+      xml:
+        name: AuthToken
+    SimpleUser:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        usernname:
+          type: string
+          example: Bob
+      xml:
+        name: SimpleUser
+    CalendarEvent:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        title:
+          type: string
+        description:
+          type: string
+        start:
+          type: string
+          format: date-time
+        end:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/Tag'
+      xml:
+        name: CalendarEvent
+    NewCalendarEvent:
+      type: object
+      required: [title, isOneDay]
+      properties:
+        title:
+          type: string
+          example: Event title
+        description:
+          type: string
+          example: Event description
+        start:
+          type: string
+          format: date-time
+          example: 2021-06-24T10:00:00Z
+        end:
+          type: string
+          format: date-time
+          example: 2021-06-24T12:00:00Z
+        tagsIds:
+          type: array
+          items:
+            type: integer
+            format: int64
+          example: [1, 2, 3]
+      xml:
+        name: NewCalendarEvent
+    NewTag:
+      type: object
+      properties:
+        name:
+          type: string
+        color:
+          type: string
+      xml:
+        name: NewTag
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        color:
+          type: string
+        updatedAt:
+          type: string
+          format: date-time
+      xml:
+        name: Tag
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/UnauthorizedError'
+servers:
+  - url: http://0.0.0.0:10000/
+    description: Local server
